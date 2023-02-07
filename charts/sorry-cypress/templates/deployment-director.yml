@@ -49,6 +49,7 @@ spec:
               key: {{ .Values.director.allowedKeysSecretKey | default $defaultAllowedKeysSecretKey }}
         {{ else }}
           value: {{ .Values.director.environmentVariables.allowedKeys }}
+        {{- end }}
         - name: PORT
           value: {{ .Values.director.service.port | quote }}
         - name: EXECUTION_DRIVER
