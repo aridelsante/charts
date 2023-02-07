@@ -41,11 +41,17 @@ spec:
         {{- if or (.Values.mongodb.internal_db.enabled) (.Values.mongodb.external_db.enabled) }}
         - name: MONGODB_DATABASE
           value: {{ .Values.mongodb.mongoDatabase }}
-        {{- if .Values.mongodb.mongoConnectionString }}
         - name: MONGODB_URI
+        {{-  $defaultConnectionSecretName := include "sorry-cypress-helm.fullname" . | printf "%s-mongodbsecrets" }}
+        {{-  $defaultConnectionSecretKey := "MONGODB_URI" }}
+        {{- if .Values.mongodb.mongoSecretConnectionString.enableCustomSecret }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.mongodb.mongoSecretConnectionString.secretName | default $defaultConnectionSecretName }}
+              key: {{ .Values.mongodb.mongoSecretConnectionString.secretKey | default $defaultConnectionSecretKey }}
+        {{- else if .Values.mongodb.mongoConnectionString }}
           value: {{ .Values.mongodb.mongoConnectionString }}
         {{- else }}
-        - name: MONGODB_URI
           value: "mongodb://{{ include "mongodb.hostname" . }}:{{ .Values.mongodb.service.port }}"
         {{- end }}
         {{- end }}
