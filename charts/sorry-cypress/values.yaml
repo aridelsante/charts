@@ -222,6 +222,10 @@ director:
   #     - "pod"
   #     - "-lapp.kubernetes.io/name=mongodb"
 
+  # Optionally provide record keys from an already existing Kubernetes secret
+  allowedKeysEnableCustomSecret: false
+  # allowedKeysSecretName: allowed-keys-secret
+
   environmentVariables:
     # The "Run URL" in the Cypress client
     dashboardUrl: ""
@@ -270,6 +274,11 @@ director:
 mongodb:
   # You need to ensure that director.environmentVariables.executionDriver is set to "../execution/mongo/driver" if you want the director to use mongodb.
   mongoConnectionString: ""
+
+  # One of the following two options must be enabled in order to securely use connection strings
+  # that may contain sensitive information. Use either enableSecret or enableCustomSecret, not both.
+  mongoSecretConnectionString:
+    enableCustomSecret: false
 
 
   # One of the following two options must be enabled in order for the Sorry Cypress API to work.
