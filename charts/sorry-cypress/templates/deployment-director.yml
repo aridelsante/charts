@@ -159,14 +159,14 @@ spec:
         - containerPort: {{ .Values.director.service.port }}
         resources:
           {{- toYaml .Values.director.resources | nindent 10 }}
-        readinessProbe:
-          httpGet:
-            path: /health-check-db
-            port: 1234
-          periodSeconds: {{ .Values.director.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.director.readinessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.director.readinessProbe.successThreshold }}
-          failureThreshold: {{ .Values.director.readinessProbe.failureThreshold }}
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health-check-db
+        #     port: 1234
+        #   periodSeconds: {{ .Values.director.readinessProbe.periodSeconds }}
+        #   timeoutSeconds: {{ .Values.director.readinessProbe.timeoutSeconds }}
+        #   successThreshold: {{ .Values.director.readinessProbe.successThreshold }}
+        #   failureThreshold: {{ .Values.director.readinessProbe.failureThreshold }}
         {{- if .Values.mongodb.certificate.enabled }}
         volumeMounts:
           - name: {{ .Values.mongodb.certificate.name }}}
