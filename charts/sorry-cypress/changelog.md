@@ -1,3 +1,128 @@
+# 1.9.0
+- Add option to specify name of config map used for the certificate bundle to the mongodb connection.
+# 1.8.1
+- [Sorry Cypress 2.5.1](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.5.1)
+
+# 1.8.0
+- Add option to connect to mongodb using a certificate bundle.
+# 1.7.10
+- Add S3_VIDEO_KEY_PREFIX env var to director.
+- Add S3_IMAGE_KEY_PREFIX env var to director.
+
+# 1.7.9
+- Add new variable to enable or disable the Apollo playground landing page on API root.
+- Allow user configuration of API PAGE_ITEMS_LIMIT
+
+https://docs.sorry-cypress.dev/configuration/api-configuration
+
+# 1.7.8
+- [Sorry Cypress 2.4.2](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.4.2)
+- Add `director.environmentVariables.gitlabJobRetries` to enable Gitlab job retries feature.
+
+# 1.7.7
+
+- [Sorry Cypress 2.4.1](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.4.1)
+
+# 1.7.6
+[Sorry Cypress 2.3.3](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.3.3)
+
+# 1.7.5
+[Sorry Cypress 2.3.2](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.3.2)
+
+# 1.7.4
+Update apiVersion for Cronjob template to `batch/v1` and PodDisruptionBudget to `policy/v1` since `v1beta1` is deprecated in v1.21+.
+
+# 1.7.3
+Allows to use  `priorityClassName` in all services.
+
+# 1.7.2
+[Sorry Cypress 2.3.1](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.3.1)
+
+# 1.7.1
+[Sorry Cypress 2.3.0](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.3.0)
+
+# 1.7.0
+Add Azure Blob Storage support
+
+# 1.6.5
+Add `minio.readUrlPrefix` value to be able to override the whole read URL to MinIO.
+
+# 1.6.4
+[Sorry Cypress 2.2.1](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.2.1)
+
+# 1.6.3
+[Sorry Cypress 2.2.0](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.2.0)
+
+# 1.6.2
+[Sorry Cypress 2.1.7](https://github.com/sorry-cypress/sorry-cypress/releases/tag/v2.1.7)
+
+# 1.6.1
+Optionally allows for NodePort on the sorry-cypress services (third party services can be controlled via their own chart values).
+We still default to ClusterIP.
+
+# 1.6.0
+We no longer test against K8s 1.21 as it is no longer supported: https://kubernetes.io/releases/
+
+Added 1.24 to the CI.
+
+# 1.5.5
+Fix `sorry-cypress-run-cleaner` image by making use of `runCleaner.image.repository` and `runCleaner.image.tag` values.
+
+# 1.5.4
+Add `runCleaner.image.repository` and `runCleaner.image.tag` values to be able to specify `sorry-cypress-run-cleaner` cronjobs image to be used.
+
+# 1.5.3
+Update
+Adds the possibility to specify a custom secret name and or secret key for the mongodb connection secret.
+Removes the necessity to set `mongodb.mongoConnectionString` to a dummy value when `mongodb.mongoSecretConnectionString.enableCustomSecret` is set to `true`.
+
+# 1.5.2
+Update
+Makes use of the /health-check-db endpoint on the director to provide a readiness probe.
+
+# 1.5.1
+No change. Accidental release (sorry!)
+
+# 1.5.0
+
+## Update
+Makes MongoDB connection string secrets configurable. Adds default Kubernetes secret for MongoDB connection string. Allows for alternative secret stores using custom Kubernetes secret.
+
+# 1.4.17
+
+## Update
+Sorry Cypress 2.1.6
+
+# 1.4.16
+
+## Update
+Sorry Cypress 2.1.5
+
+# 1.4.15
+
+## Update
+Sorry Cypress 2.1.4
+
+# 1.4.14
+
+## Update
+???
+
+# 1.4.13
+
+## Update
+Sorry Cypress 2.1.2
+
+# 1.4.12
+
+## Bugfix
+Fixes an issue that prevents MINIO_USESSL being always false
+
+# 1.4.11
+
+## Update
+Makes pathType configurable per ingress. `.Values.(api|dashboard|...).ingress.hosts.*.pathType`. Default retained at: `Prefix`
+
 # 1.4.10
 
 ## Update

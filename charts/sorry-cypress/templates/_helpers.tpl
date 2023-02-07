@@ -71,6 +71,15 @@ Create the s3 secret
 {{- end }}
 
 {{/*
+Create the mongoDB secret
+*/}}
+{{- define "mongoSecretConnectionString" }}
+{{- with .Values.mongodb }}
+{{- printf .mongoConnectionString | b64enc -}}
+{{- end }}
+{{- end }}
+
+{{/*
   Determine the MongoDB hostname.
 */}}
 {{- define "mongodb.hostname" -}}
@@ -103,5 +112,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- .Values.minio.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- printf "%s-%s" .Release.Name "minio" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "sorry-cypress.azureBlobStorage.fullname" -}}
+{{- if .Values.azureBlobStorage.fullnameOverride -}}
+{{- .Values.azureBlobStorage.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name "azure-blob-storage" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}

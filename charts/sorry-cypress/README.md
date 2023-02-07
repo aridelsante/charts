@@ -72,6 +72,7 @@ https://sorry-cypress.dev/api#configuration
 | `api.enabled`                         | Whether to deploy the API service                                                            | `true`                      |
 | `api.resources`                       | Resources to initialize the container                                                        | `{}`                        |
 | `api.podAnnotations`                  | Set annotations for pods                                                                     | `{}`                        |
+| `api.priorityClassName`               | Name of the existing priority class to be used by api pod(s)                                 | `""`                        |
 | `api.podLabels`                       | Set additional labels for pods                                                               | `{}`                        |
 | `api.affinity`                        | Set affinity for pods                                                                        | `{}`                        |
 | `api.nodeSelector`                    | Set node selector for pods                                                                   | `{}`                        |
@@ -89,6 +90,8 @@ https://sorry-cypress.dev/api#configuration
 | `api.ingress.hosts[0].path`           | Root path to the service installation                                                        | `/`                         |
 | `api.ingress.tls`                     | Ingress secrets for TLS certificates                                                         | `[]`                        |
 | `api.initContainers`                  | Allows you to define init container(s) for the api pod                                       | `[]`                        |
+| `api.enableApolloPlayground`          | Allows you to enable or disable Apollo Playground landing page                               | `false`                     |
+| `api.pageItemsLimit`                  | Allows you to set the API PAGE_ITEMS_LIMIT variable                                          | `10`                        |
 
 ### Dashboard service
 
@@ -105,6 +108,7 @@ https://sorry-cypress.dev/dashboard#configuration
 | `dashboard.environmentVariables.graphQlClientCredentials` | Set the `GRAPHQL_CLIENT_CREDENTIALS` environment variable to configure the API service client credentials. | `""`                              |
 | `dashboard.environmentVariables.graphQlSchemaUrl`         | Set the `GRAPHQL_SCHEMA_URL` environment variable to configure the URL of API service.                     | `""`                              |
 | `dashboard.podAnnotations`                                | Set annotations for pods                                                                                   | `{}`                              |
+| `dashboard.priorityClassName`                             | Name of the existing priority class to be used by dashboard pod(s)                                         | `""`                              |
 | `dashboard.podLabels`                                     | Set additional labels for pods                                                                             | `{}`                              |
 | `dashboard.affinity`                                      | Set affinity for pods                                                                                      | `{}`                              |
 | `dashboard.nodeSelector`                                  | Set node selector for pods                                                                                 | `{}`                              |
@@ -135,9 +139,11 @@ https://sorry-cypress.dev/director/configuration
 | `director.environmentVariables.allowedKeys`       | Define the list of comma delimited record keys (provided to the Cypress Runner using `--key` option). Empty or not provided variable means that all record keys are allowed. | `""`                             |
 | `director.environmentVariables.dashboardUrl`      | The "Run URL" in the Cypress client                                                                                                                                          | `""`                             |
 | `director.environmentVariables.executionDriver`   | Set the execution driver. Valid options are `"../execution/in-memory"` and `"../execution/mongo/driver"`                                                                     | `"../execution/in-memory"`       |
-| `director.environmentVariables.screenshotsDriver` | Set the screenshots driver. Valid options are `"../screenshots/dummy.driver"` and `"../screenshots/s3.driver"`                                                               | `"../screenshots/dummy.driver"`  |
+| `director.environmentVariables.screenshotsDriver` | Set the screenshots driver. Valid options are `"../screenshots/dummy.driver"`, `"../screenshots/s3.driver"`, `"../screenshots/minio.driver"` or `"../screenshots/azure-blob-storage.driver"` | `"../screenshots/dummy.driver"`  |
 | `director.environmentVariables.inactivityTimeoutSeconds`       | Set the timeout of all test runs under your projects. |  `180s` |
+| `director.environmentVariables.gitlabJobRetries`               | Enable job retries from Gitlab.                       |  `false` |
 | `director.podAnnotations`                         | Set annotations for pods                                                                                                                                                     | `{}`                             |
+| `director.priorityClassName`                      | Name of the existing priority class to be used by director pod(s)                                                                                                            | `""`                             |
 | `director.podLabels`                              | Set additional labels for pods                                                                                                                                               | `{}`                             |
 | `director.affinity`                               | Set affinity for pods                                                                                                                                                        | `{}`                             |
 | `director.nodeSelector`                           | Set node selector for pods                                                                                                                                                   | `{}`                             |
@@ -151,28 +157,41 @@ https://sorry-cypress.dev/director/configuration
 | `director.ingress.hosts[0].path`                  | Root path to the service installation                                                                                                                                        | `/`                              |
 | `director.ingress.tls`                            | Ingress secrets for TLS certificates                                                                                                                                         | `[]`                             |
 | `director.initContainers`                         | Allows you to define init container(s) for the director pod                                                                                                                  | `[]`                             |
+| `director.readinessProbe.periodSeconds`    | How often (in seconds) to perform the probe.                                                 | `5`                         |
+| `director.readinessProbe.timeoutSeconds`   | Number of seconds after which the probe times out.                                           | `3`                         |
+| `director.readinessProbe.successThreshold` | Minimum consecutive successes for the probe to be considered successful after having failed. | `2`                         |
+| `director.readinessProbe.failureThreshold` | When a probe fails, Kubernetes will try `failureThreshold` times before giving up.           | `5`     
 
 ### Mongodb service
 
 If the execution driver is set to `"../execution/mongo/driver"`, you may enable the internal MongoDB service deploy or provide an external one. Ignore this configuration when using other execution drivers.
 
-| Parameter                      | Description                                                                        | Default         |
-|--------------------------------|------------------------------------------------------------------------------------|-----------------|
-| `mongodb.internal_db.enabled`    | If enabled, it will deploy the internal MongoDB service.                           | `true`          |
-| `mongodb.external_db.enabled`    | If enabled, it will allow you to use an external mongodb                           | `false`          |
-| `mongodb.external_db.mongoServer`| The mongo server when providing an external one. Use it with `mongodb.internal_db.enabled=false` | `""`            |
-| `mongodb.mongoDatabase`          | The mongo database                                                                 | `sorry-cypress` |
-| `mongodb.mongoConnectionString`  | Ignored if blank. Set a custom mongodb connection string.                          | `""` |
+| Parameter                                                | Description                                                                                                                                             | Default         |
+|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
+| `mongodb.internal_db.enabled`                            | If enabled, it will deploy the internal MongoDB service.                                                                                                | `true`          |
+| `mongodb.external_db.enabled`                            | If enabled, it will allow you to use an external mongodb                                                                                                | `false`         |
+| `mongodb.external_db.mongoServer`                        | The mongo server when providing an external one. Use it with `mongodb.internal_db.enabled=false`                                                        | `""`            |
+| `mongodb.mongoDatabase`                                  | The mongo database                                                                                                                                      | `sorry-cypress` |
+| `mongodb.mongoConnectionString`                          | Ignored if blank. Set a custom mongodb connection string.                                                                                               | `""`            |
+| `mongodb.mongoSecretConnectionString.enableSecret`       | If enabled, a Kubernetes secret is created from `mongodb.mongoConnectionString`. Use either enableSecret or enableCustomSecret, not both.               | `false`         |
+| `mongodb.mongoSecretConnectionString.enableCustomSecret` | If enabled, an alternative secrets manager can be used by creating a custom Kubernetes secret. Use either enableSecret or enableCustomSecret, not both. | `false`         |
+| `mongodb.mongoSecretConnectionString.secretName`         | A custom secret name for the mongodb connection secret. Requires `mongodb.mongoSecretConnectionString.enableCustomSecret` to be true                    |                 | 
+| `mongodb.mongoSecretConnectionString.secretKey`          | A custom secret key used for the mongodb connection string. Requires `mongodb.mongoSecretConnectionString.enableCustomSecret` to be true                |                 | 
+| `mongodb.certificate.enable`                              | Enable the use of CA certificate bundle for mongo db connection.                                                                                         | `false`         |
+| `mongodb.certificate.name`                            | A custom name for secret holding your config map                                                                                                             | `false`         |
+| `mongodb.certificate.configMapName`                            | A custom name for the config map name of the CA certifacate bundle                                                                                   | `sorry-cypress-db-cert` |
 
 All other mongodb options are defined in [the Bitnami mongo db helm chart](https://github.com/bitnami/charts/blob/master/bitnami/mongodb/values.yaml).
 
 ### Screenshots And Videos
 
 For saving screenshot you need to configure screenshots driver.
-Currently only S3 and MinIO supported and for s3 you should use `"../screenshots/s3.driver"`.
+Currently, only S3, MinIO and Azure Blob Storage are supported (See `director.environmentVariables.screenshotsDriver`)
 https://sorry-cypress.dev/director/storage
 
 ## S3
+To use S3 you should use `"../screenshots/minio.driver"` as your screenshot driver.
+https://docs.sorry-cypress.dev/configuration/director-configuration/aws-s3-configuration
 
 | Parameter                     | Description                                                                                                       | Default                      |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------- |
@@ -182,13 +201,15 @@ https://sorry-cypress.dev/director/storage
 | `s3.readUrlPrefix`            | The host to load the video/screenshot in the dashboard (defaults to the bucket URL)                               | `""`                         |
 | `s3.accessKey`                | The `AWS_ACCESS_KEY_ID` environment variable to configure AWS credentials                                         | `""`                         |
 | `s3.secretAccessKey`          | The `AWS_SECRET_ACCESS_KEY` environment variable to configure AWS credentials                                     | `""`                         |
-| `s3.ingress.enabled`          | Flag to define if the S3 ingress is enabled. **It will also enable an ExternalName service to expose the bucket** | `false`                       |
+| `s3.ingress.enabled`          | Flag to define if the S3 ingress is enabled. **It will also enable an ExternalName service to expose the bucket** | `false`                      |
 | `s3.ingress.ingressClassName` | The IngressClass that should be used to implement this Ingress                                                    | `nginx`                      |
 | `s3.ingress.labels`           | Ingress labels                                                                                                    | `{}`                         |
 | `s3.ingress.annotations`      | Ingress annotations                                                                                               | `{}`                         |
 | `s3.ingress.hosts[0].host`    | Hostname to the service installation                                                                              | `static.chart-example.local` |
 | `s3.ingress.hosts[0].path`    | Root path to the service installation                                                                             | `/`                          |
 | `s3.ingress.tls`              | Ingress secrets for TLS certificates                                                                              | `[]`                         |
+| `s3.videoKeyPrefix`           | The prefix to use when uploading videos.                                                                          | `""`                         |
+| `s3.imageKeyPrefix`           | The prefix to use when uploading screenshots.                                                                     | `""`                         |
 
 ### IAM roles for AWS EKS Service Accounts
 
@@ -210,8 +231,8 @@ See https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accou
 ### MinIO
 
 We use MinIO As subchart, so you can also add other variables from [minio chart](https://github.com/minio/charts/tree/master/minio).
-Currently only S3 and MinIO supported and for MinIO you should use `"../screenshots/minio.driver"`.
-https://sorry-cypress.dev/director/storage
+To use MinIO you should use `"../screenshots/minio.driver"` as your screenshot driver.
+https://docs.sorry-cypress.dev/configuration/director-configuration/minio-configuration
 | Parameter                     | Description                                                                                                                                                                                    | Default                         |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
 | `minio.enabled`               | If enabled, it will deploy the internal MinIO service.                                                                                                                                         | `false`                         |
@@ -220,15 +241,29 @@ https://sorry-cypress.dev/director/storage
 | `minio.defaultBucket.enabled` | Creates bucket when MinIO installed                                                                                                                                                            | `true`                          |
 | `minio.defaultBucket.name`    | The name of the bucket in MinIO that Sorry Cypress should use                                                                                                                                  | `sorry-cypress`                 |
 | `minio.persistence.size`      | Size of persistent volume claim of MinIO	                                                                                                                                                     | `10Gi`                          |
+| `minio.readUrlPrefix`         | Override the URL whih will be used to read files from MinIO                                                                                                                                    | `""`                            |
+
+### Azure Blob Storage
+To use Azure Blob Storage you should use `"../screenshots/azure-blob-storage.driver"` as your screenshot driver.
+
+| Parameter                                 | Description                                                                                                                                                                                    | Default                         |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `azureBlobStorage.containerName`          | The name of the container in Azure Blob Storage that Sorry Cypress should use                                                                                                                  | `sorry-cypress`                 |
+| `azureBlobStorage.uploadUrlExpiryInHours` | How long the signed url used for upload will stay valid                                                                                                                                        | `24`                            |
+| `azureBlobStorage.existingSecret`         | Override the name of the secret which contain the azure connection string (the connection string should be under the key "connexionstring" in this secret)                                                                                                                       | `""`                            |
+| `azureBlobStorage.fullNameOverride`       | Allows you to override the full name                                                                                                                                                           | `""`                            |
 
 ### Sorry Cypress Run Cleaner
 
 If you wish to have older runs regularly removed from the database, you can enable this.
 For more information, refer to https://github.com/sendible-labs/sorry-cypress-run-cleaner
 
-| Parameter                     | Description                                                                                                                                                                                    | Default                         |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `runCleaner.enabled`          | If enabled, it will deploy the sorry-cypress run cleaner cronjob                                                                                                                               | `false`                         |
-| `runCleaner.daysToKeep`       | How many days worth of run data to keep in the database. Anything older is deleted. If omitted and `runCleaner.enabled` is true, it will default to 100d.                                      | `200`                           |
-| `runCleaner.schedule`         | The cron schedule to run the runCleaner task                                                                                                                                                   | `'0 1 * * *'`                   |
-| `runCleaner.clusterDomain`    | Cluster domain, necessary to resolve api host                                                                                                                                                  | `'cluster.local'`               |
+| Parameter                     | Description                                                                                                                                               | Default                                             |
+|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| `runCleaner.enabled`          | If enabled, it will deploy the sorry-cypress run cleaner cronjob                                                                                          | `false`                                             |
+| `runCleaner.image.repository` | The image repository to be used for the `sorry-cypress-run-cleaner` cronjob                                                                               | `"ghcr.io/sendible-labs/sorry-cypress-run-cleaner"` |
+| `runCleaner.image.tag`        | The image tag to be used for the `sorry-cypress-run-cleaner` cronjob                                                                                      | `"stable"`                                          |
+| `runCleaner.daysToKeep`       | How many days worth of run data to keep in the database. Anything older is deleted. If omitted and `runCleaner.enabled` is true, it will default to 100d. | `200`                                               |
+| `runCleaner.schedule`         | The cron schedule to run the runCleaner task                                                                                                              | `'0 1 * * *'`                                       |
+| `runCleaner.clusterDomain`    | Cluster domain, necessary to resolve api host                                                                                                             | `'cluster.local'`                                   |
+| `runCleaner.priorityClassName`| Name of the existing priority class to be used by runCleaner pod(s)                                                                                       | `""`                                                |

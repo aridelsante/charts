@@ -33,6 +33,9 @@ spec:
       affinity:
         {{- tpl . $ | nindent 8 }}
       {{- end }}
+      {{- if .Values.director.priorityClassName }}
+      priorityClassName: {{ .Values.director.priorityClassName }}
+      {{- end }}
       containers:
       - env:
         - name: DASHBOARD_URL
@@ -78,6 +81,14 @@ spec:
         - name: S3_ACL
           value: {{ . }}
         {{- end }}
+        {{- with .Values.s3.videoKeyPrefix }}
+        - name: S3_VIDEO_KEY_PREFIX
+          value: {{ . | quote }}
+        {{- end }}
+        {{- with .Values.s3.imageKeyPrefix }}
+        - name: S3_IMAGE_KEY_PREFIX
+          value: {{ . | quote }}
+        {{- end }}
         {{- with .Values.s3.readUrlPrefix }}
         - name: S3_READ_URL_PREFIX
           value: {{ . | quote }}
@@ -93,6 +104,17 @@ spec:
               name: {{ include "sorry-cypress-helm.fullname" . }}-s3secrets
               key: AWS_SECRET_ACCESS_KEY
         {{- end }}
+        {{- end }}
+        {{- if and (not .Values.minio.enabled) (eq .Values.director.environmentVariables.screenshotsDriver "../screenshots/azure-blob-storage.driver") }}
+        - name: AZURE_CONTAINER_NAME
+          value: {{ .Values.azureBlobStorage.containerName }}
+        - name: AZURE_UPLOAD_URL_EXPIRY_IN_HOURS
+          value: {{ .Values.azureBlobStorage.uploadUrlExpiryInHours | quote }}
+        - name: AZURE_CONNEXION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: {{ default (include "sorry-cypress.azureBlobStorage.fullname" .) .Values.azureBlobStorage.existingSecret }}
+              key: "connexionstring"
         {{- end }}
         {{- if and (.Values.minio.enabled) (eq .Values.director.environmentVariables.screenshotsDriver "../screenshots/minio.driver") }}
         - name: MINIO_BUCKET
@@ -113,13 +135,17 @@ spec:
           value: {{ .Values.minio.url }}
         - name: MINIO_PORT
           value: {{ .Values.minio.service.port | quote }}
-        {{- if eq (.Values.minio.service.port | quote) "443" }}
+        {{- if eq (.Values.minio.service.port | quote) (443 | quote) }}
         - name: MINIO_USESSL
           value: "true"
         {{- end }}
+        - name: MINIO_READ_URL_PREFIX
+          value: {{ .Values.minio.readUrlPrefix }}
         {{- end }}
         - name: INACTIVITY_TIMEOUT_SECONDS
           value: {{ .Values.director.environmentVariables.inactivityTimeoutSeconds | quote }}
+        - name: GITLAB_JOB_RETRIES
+          value: {{ .Values.director.environmentVariables.gitlabJobRetries | quote }}
         image: "{{ .Values.director.image.repository }}:{{ .Values.director.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.director.image.pullPolicy }}
         name: {{ include "sorry-cypress-helm.fullname" . }}-director
@@ -127,11 +153,31 @@ spec:
         - containerPort: {{ .Values.director.service.port }}
         resources:
           {{- toYaml .Values.director.resources | nindent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /health-check-db
+            port: 1234
+          periodSeconds: {{ .Values.director.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.director.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.director.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.director.readinessProbe.failureThreshold }}
+        {{- if .Values.mongodb.certificate.enabled }}
+        volumeMounts:
+          - name: {{ .Values.mongodb.certificate.name }}}
+            mountPath: /etc/certs
+        {{- end}}
       restartPolicy: Always
       {{- with (.Values.director.serviceAccount.name | default .Values.director.serviceAccountName) }}
       serviceAccountName: {{ . | quote }}
       {{- end }}
+      {{- if .Values.mongodb.certificate.enabled}}
+      volumes:
+        - name: {{ .Values.mongodb.certificate.name }}}
+          configMap:
+            name:  {{ .Values.mongodb.certificate.name }}}
+      {{- else }}
       volumes: null
+      {{- end }}
       {{- if .Values.director.initContainers }}
       initContainers:
       {{- include "common.tplvalues.render" (dict "value" .Values.director.initContainers "context" $) | nindent 8 }}

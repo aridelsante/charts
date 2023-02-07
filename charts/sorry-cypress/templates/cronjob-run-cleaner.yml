@@ -1,5 +1,5 @@
 {{- if .Values.runCleaner.enabled }}
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   labels:
@@ -17,9 +17,12 @@ spec:
           labels:
             app: sorry-cypress-run-cleaner
         spec:
+          {{- if .Values.runCleaner.priorityClassName }}
+          priorityClassName: {{ .Values.runCleaner.priorityClassName }}
+          {{- end }}
           containers:
             - name: sorry-cypress-run-cleaner
-              image: ghcr.io/sendible-labs/sorry-cypress-run-cleaner:stable
+              image: "{{ .Values.runCleaner.image.repository }}:{{ .Values.runCleaner.image.tag }}"
               imagePullPolicy: Always
               env:
                 - name: run_days_to_keep

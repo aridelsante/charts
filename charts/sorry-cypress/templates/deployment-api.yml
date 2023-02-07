@@ -36,8 +36,15 @@ spec:
       affinity:
         {{- tpl . $ | nindent 8 }}
       {{- end }}
+      {{- if .Values.api.priorityClassName }}
+      priorityClassName: {{ .Values.api.priorityClassName }}
+      {{- end }}
       containers:
       - env:
+        - name: APOLLO_PLAYGROUND
+          value: {{ .Values.api.enableApolloPlayground | quote }}
+        - name: PAGE_ITEMS_LIMIT
+          value: {{ .Values.api.pageItemsLimit | quote }}
         {{- if or (.Values.mongodb.internal_db.enabled) (.Values.mongodb.external_db.enabled) }}
         - name: MONGODB_DATABASE
           value: {{ .Values.mongodb.mongoDatabase }}
@@ -70,9 +77,21 @@ spec:
           timeoutSeconds: {{ .Values.api.readinessProbe.timeoutSeconds }}
           successThreshold: {{ .Values.api.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.api.readinessProbe.failureThreshold }}
+        {{- if .Values.mongodb.certificate.enabled }}
+        volumeMounts:
+          - name: {{ .Values.mongodb.certificate.name }}}
+            mountPath: /etc/certs
+        {{- end}}
       restartPolicy: Always
       serviceAccountName: ""
+      {{- if .Values.mongodb.certificate.enabled}}
+      volumes:
+        - name: {{ .Values.mongodb.certificate.name }}}
+          configMap:
+            name:  {{ .Values.mongodb.certificate.name }}}
+      {{- else }}
       volumes: null
+      {{- end }}
       {{- if .Values.api.initContainers }}
       initContainers:
       {{- include "common.tplvalues.render" (dict "value" .Values.api.initContainers "context" $) | nindent 8 }}
