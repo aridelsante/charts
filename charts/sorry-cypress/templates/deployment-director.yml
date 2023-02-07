@@ -41,15 +41,7 @@ spec:
         - name: DASHBOARD_URL
           value: {{ .Values.director.environmentVariables.dashboardUrl | quote }}
         - name: ALLOWED_KEYS
-        # {{-  $defaultAllowedKeysSecretKey := "ALLOWED_KEYS" }}
-        # {{- if .Values.director.allowedKeysEnableCustomSecret }}
-        #   valueFrom:
-        #     secretKeyRef:
-        #       name: {{ .Values.director.allowedKeysSecretName }}
-        #       key: {{ .Values.director.allowedKeysSecretKey | default $defaultAllowedKeysSecretKey }}
-        # {{ else }}
           value: {{ .Values.director.environmentVariables.allowedKeys }}
-        # {{- end }}
         - name: PORT
           value: {{ .Values.director.service.port | quote }}
         - name: EXECUTION_DRIVER
@@ -159,14 +151,14 @@ spec:
         - containerPort: {{ .Values.director.service.port }}
         resources:
           {{- toYaml .Values.director.resources | nindent 10 }}
-        # readinessProbe:
-        #   httpGet:
-        #     path: /health-check-db
-        #     port: 1234
-        #   periodSeconds: {{ .Values.director.readinessProbe.periodSeconds }}
-        #   timeoutSeconds: {{ .Values.director.readinessProbe.timeoutSeconds }}
-        #   successThreshold: {{ .Values.director.readinessProbe.successThreshold }}
-        #   failureThreshold: {{ .Values.director.readinessProbe.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: /health-check-db
+            port: 1234
+          periodSeconds: {{ .Values.director.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.director.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.director.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.director.readinessProbe.failureThreshold }}
         {{- if .Values.mongodb.certificate.enabled }}
         volumeMounts:
           - name: {{ .Values.mongodb.certificate.name }}}
